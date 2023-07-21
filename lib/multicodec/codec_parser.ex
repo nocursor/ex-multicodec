@@ -20,12 +20,17 @@ defmodule Multicodec.CodecParser do
            {:ok, %{"code" => "NUL"}} -> []
           # these happen when there's bad data
            {:ok, %{"code" => <<>>}} -> []
-           {:ok, %{"codec" => <<>>}} -> []
+           {:ok, %{"name" => <<>>}} -> []
           # finally acceptable data
-           {:ok, %{"code" => code, "codec" => codec}} ->
-             parsed_code = parse_code(code)
-             [MulticodecMapping.new(codec, parsed_code)]
-           _ -> []
+           {:ok, %{"name" => codec,
+           "tag" => _tag,
+           "code" => code,
+           "status" => _status,
+           "description" => _description,
+           }} ->
+            parsed_code = parse_code(code)
+            [MulticodecMapping.new(codec, parsed_code)]
+          _ -> []
          end
        )
   end
@@ -40,6 +45,7 @@ defmodule Multicodec.CodecParser do
                     |> Enum.intersperse(",\n"), ?]] end).()
     IO.puts(device, codec_data)
   end
+
 
   defp parse_code(<<"0x", rest::binary>>) do
     {n, _} = Integer.parse(rest, 16)
