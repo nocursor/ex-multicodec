@@ -74,7 +74,6 @@ defmodule Multicodec do
   """
   @type prefix() :: MulticodecMapping.prefix()
 
-
   @doc """
   Encodes a binary using Multicodec using the given codec name.
 
@@ -123,8 +122,8 @@ defmodule Multicodec do
   @spec encode(binary(), multi_codec()) :: {:ok, multicodec_binary()} | {:error, term()}
   def encode(data, codec) do
     {:ok, encode!(data, codec)}
-    rescue
-      e in ArgumentError -> {:error, Exception.message(e)}
+  rescue
+    e in ArgumentError -> {:error, Exception.message(e)}
   end
 
   @doc """
@@ -182,8 +181,8 @@ defmodule Multicodec do
   @spec decode(multicodec_binary()) :: {:ok, binary()} | {:error, term()}
   def decode(data) when is_binary(data) do
     {:ok, decode!(data)}
-    rescue
-      e in ArgumentError -> {:error, Exception.message(e)}
+  rescue
+    e in ArgumentError -> {:error, Exception.message(e)}
   end
 
   @doc """
@@ -229,10 +228,10 @@ defmodule Multicodec do
       {:error, "data is not Multicodec encoded."}
 
   """
-  @spec codec_decode(multicodec_binary()) :: {:ok,{binary(), multi_codec()}} | {:error, term()}
+  @spec codec_decode(multicodec_binary()) :: {:ok, {binary(), multi_codec()}} | {:error, term()}
   def codec_decode(data) when is_binary(data) do
     {:ok, codec_decode!(data)}
-    rescue
+  rescue
     e in ArgumentError -> {:error, Exception.message(e)}
   end
 
@@ -282,8 +281,8 @@ defmodule Multicodec do
   @spec codec(multicodec_binary()) :: {:ok, multi_codec()} | {:error, term()}
   def codec(data) when is_binary(data) do
     {:ok, codec!(data)}
-    rescue
-      e in ArgumentError -> {:error, Exception.message(e)}
+  rescue
+    e in ArgumentError -> {:error, Exception.message(e)}
   end
 
   @doc """
@@ -291,7 +290,7 @@ defmodule Multicodec do
   """
   @spec codecs() :: [multi_codec()]
   def codecs() do
-    unquote(Enum.map(CodecTable.codec_mappings(), fn(%{codec: codec}) -> codec end))
+    unquote(Enum.map(CodecTable.codec_mappings(), fn %{codec: codec} -> codec end))
   end
 
   @doc """
@@ -301,7 +300,7 @@ defmodule Multicodec do
   """
   @spec mappings() :: [MulticodecMapping.t()]
   def mappings() do
-    unquote(Macro.escape(CodecTable.codec_mappings))
+    unquote(Macro.escape(CodecTable.codec_mappings()))
   end
 
   @doc """
@@ -325,7 +324,6 @@ defmodule Multicodec do
   def prefix_for!(codec) when is_binary(codec) do
     do_prefix_for(codec)
   end
-
 
   @doc """
   Returns the prefix that should be used with the given codec.
@@ -351,8 +349,8 @@ defmodule Multicodec do
   @spec prefix_for(multi_codec()) :: {:ok, prefix()} | {:error, term()}
   def prefix_for(codec) do
     {:ok, prefix_for!(codec)}
-    rescue
-      e in ArgumentError -> {:error, Exception.message(e)}
+  rescue
+    e in ArgumentError -> {:error, Exception.message(e)}
   end
 
   @doc """
@@ -378,20 +376,22 @@ defmodule Multicodec do
     end
   end
 
-#===============================================================================
-# Private
-#===============================================================================
+  # ===============================================================================
+  # Private
+  # ===============================================================================
 
   defp do_codec_decode(<<>>) do
     raise ArgumentError, "data is not Multicodec encoded."
   end
 
   defp do_codec_decode(data) do
-    {prefix, decoded_data} = decode_varint(data) #Varint.LEB128.decode(data)
+    # Varint.LEB128.decode(data)
+    {prefix, decoded_data} = decode_varint(data)
     {decoded_data, codec_for(prefix)}
   end
 
   defp do_prefix_for(codec)
+
   for %{prefix: prefix, codec: codec} <- CodecTable.codec_mappings() do
     defp do_prefix_for(unquote(codec)) do
       unquote(prefix)
@@ -399,10 +399,11 @@ defmodule Multicodec do
   end
 
   defp do_prefix_for(codec) when is_binary(codec) do
-    raise ArgumentError, "unsupported codec - #{inspect codec, binaries: :as_strings}"
+    raise ArgumentError, "unsupported codec - #{inspect(codec, binaries: :as_strings)}"
   end
 
   defp codec_for(code)
+
   for %{codec: codec, code: code} <- CodecTable.codec_mappings() do
     defp codec_for(unquote(code)) do
       unquote(codec)
@@ -410,7 +411,7 @@ defmodule Multicodec do
   end
 
   defp codec_for(code) when is_integer(code) do
-    raise ArgumentError, "unsupported code - #{inspect code, binaries: :as_strings}"
+    raise ArgumentError, "unsupported code - #{inspect(code, binaries: :as_strings)}"
   end
 
   defp do_decode(<<>>) do
@@ -418,15 +419,15 @@ defmodule Multicodec do
   end
 
   defp do_decode(data) do
-    {_prefix, decoded_data} = decode_varint(data) #Varint.LEB128.decode(data)
+    # Varint.LEB128.decode(data)
+    {_prefix, decoded_data} = decode_varint(data)
     decoded_data
   end
 
   defp decode_varint(data) do
-    #temporary patch until we can replace or pull request varint
+    # temporary patch until we can replace or pull request varint
     Varint.LEB128.decode(data)
-    rescue
-      FunctionClauseError -> raise ArgumentError, "data is not a varint."
+  rescue
+    FunctionClauseError -> raise ArgumentError, "data is not a varint."
   end
-
 end

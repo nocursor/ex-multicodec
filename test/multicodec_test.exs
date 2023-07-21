@@ -9,7 +9,9 @@ defmodule MulticodecTest do
     {:ok, encoded_data} = Multicodec.encode(address, codec)
     assert Multicodec.decode(encoded_data) == {:ok, address}
     assert Multicodec.encode!(address, codec) |> Multicodec.codec_decode!() == {address, codec}
-    assert Multicodec.encode!(address, codec) |> Multicodec.codec_decode() == {:ok, {address, codec}}
+
+    assert Multicodec.encode!(address, codec) |> Multicodec.codec_decode() ==
+             {:ok, {address, codec}}
   end
 
   test "encode!/2 raises errors" do
@@ -67,6 +69,7 @@ defmodule MulticodecTest do
 
   test "encodes for all codecs" do
     data = "Like strawberries and cream, it's the only way, it's the only way to be."
+
     for codec <- Multicodec.codecs() do
       assert {:ok, _} = Multicodec.encode(data, codec)
       assert Multicodec.encode!(data, codec) |> is_binary() == true
@@ -75,6 +78,7 @@ defmodule MulticodecTest do
 
   test "encodes transparently for all codecs" do
     data = "Massive, huge, really big"
+
     for codec <- Multicodec.codecs() do
       assert Multicodec.encode!(data, codec) |> Multicodec.decode!() == data
       {:ok, encoded_data} = Multicodec.encode(data, codec)
@@ -112,6 +116,7 @@ defmodule MulticodecTest do
 
   test "codec returns the correct codec for all codecs" do
     data = "I used to sometimes try to catch her, but never even caught her name"
+
     for codec <- Multicodec.codecs() do
       {:ok, encoded_data} = Multicodec.encode(data, codec)
       assert Multicodec.codec!(encoded_data) == codec
@@ -130,8 +135,8 @@ defmodule MulticodecTest do
     for codec <- Multicodec.codecs() do
       assert Multicodec.codec?(codec) == true
     end
+
     assert Multicodec.codec?("") == false
     assert Multicodec.codec?("spaghetti monsters") == false
   end
-
 end
